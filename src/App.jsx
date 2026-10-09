@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
 import WorkoutBuilder from './components/WorkoutBuilder/WorkoutBuilder';
 import NutritionPlanner from './components/NutritionPlanner/NutritionPlanner';
 import WarmupSection from './components/WorkoutBuilder/WarmupSection';
@@ -8,13 +8,14 @@ import ClientPortal from './components/ClientView/ClientPortal';
 import PrintExportView from './components/PrintView/PrintExportView';
 import AuthModal from './components/Auth/AuthModal';
 import { DEFAULT_CLIENT } from './data/defaultData';
+import { Menu, Sun, Moon, Eye, Edit3, Lock, LogOut } from 'lucide-react';
 
 const LOCAL_STORAGE_KEY = 'coachfit_clients_v3';
 const THEME_STORAGE_KEY = 'coachfit_theme';
 const COACH_AUTH_KEY = 'coachfit_current_coach';
 
 export default function App() {
-  // Tema Durumu (Açık / Koyu)
+  // Tema (Açık / Koyu)
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem(THEME_STORAGE_KEY) || 'light';
   });
@@ -39,6 +40,7 @@ export default function App() {
     }
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Danışanlar
   const [clients, setClients] = useState(() => {
@@ -133,10 +135,10 @@ export default function App() {
           setActiveClientId(parsed[0].id);
           alert("Program başarıyla yüklendi!");
         } else {
-          alert("Geçersiz yedek dosyası!");
+          alert("Geçersiz dosya!");
         }
       } catch (err) {
-        alert("Dosya okunamadı: " + err.message);
+        alert("Hata: " + err.message);
       }
     };
   };
@@ -153,11 +155,21 @@ export default function App() {
     window.print();
   };
 
+  const getPageTitle = () => {
+    switch (activeTab) {
+      case 'workout': return 'Antrenman Programı';
+      case 'nutrition': return 'Diyet & Makrolar';
+      case 'warmup': return 'Isınma & Bar Piramidi';
+      case 'measurements': return 'Ölçüm & Kilo Takibi';
+      default: return 'CoachFit';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex font-sans transition-colors duration-200">
       
-      {/* Üst Gezinme & Başlık */}
-      <Navbar
+      {/* 1. Sol Seçenek Menüsü (Sidebar) */}
+      <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         viewMode={viewMode}
@@ -176,63 +188,97 @@ export default function App() {
         onImportJson={handleImportJson}
         onResetData={handleResetData}
         onPrint={handlePrint}
+        mobileOpen={mobileSidebarOpen}
+        setMobileOpen={setMobileSidebarOpen}
       />
 
-      {/* Ana Gövde */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6 no-print">
+      {/* 2. Sağ Ana İçerik Alanı (Sidebar genişliği kadar sola boşluklu: lg:pl-72) */}
+      <div className="flex-1 lg:pl-72 flex flex-col min-w-0">
         
-        {/* Mod 1: Danışan Görünümü (Sporcu Modu) */}
-        {viewMode === 'client' ? (
-          <ClientPortal
-            client={activeClient}
-            onUpdateClient={handleUpdateActiveClient}
-          />
-        ) : (
-          /* Mod 2: Antrenör Modu (Koç Paneli) */
-          <div>
-            {activeTab === 'workout' && (
+        {/* Mobil Üst Bar */}
+        <header className="lg:hidden h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between sticky top-0 z-30 no-print">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <span className="font-heading font-black text-sm text-slate-900 dark:text-white">
+              {getPageTitle()}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              {viewMode === 'coach' ? 'Koç' : 'Danışan'}
+            </span>
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            </button>
+          </div>
+        </header>
+
+        {/* Ana İçerik Canvas */}
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 no-print">
+          
+          {/* TAB 1: ANTRENMAN PROGRAMI */}
+          {activeTab === 'workout' && (
+            viewMode === 'client' ? (
+              <ClientPortal
+                client={activeClient}
+                onUpdateClient={handleUpdateActiveClient}
+              />
+            ) : (
               <WorkoutBuilder
                 workoutProgram={activeClient.workoutProgram}
                 onUpdateWorkoutProgram={(updated) => handleUpdateActiveClient({ ...activeClient, workoutProgram: updated })}
                 viewMode={viewMode}
               />
-            )}
+            )
+          )}
 
-            {activeTab === 'nutrition' && (
-              <NutritionPlanner
-                client={activeClient}
-                nutritionPlan={activeClient.nutritionPlan}
-                onUpdateNutritionPlan={(updated) => handleUpdateActiveClient({ ...activeClient, nutritionPlan: updated })}
-                viewMode={viewMode}
-              />
-            )}
+          {/* TAB 2: DİYET & MAKROLAR (Danışan ve Koç Modu) */}
+          {activeTab === 'nutrition' && (
+            <NutritionPlanner
+              client={activeClient}
+              nutritionPlan={activeClient.nutritionPlan}
+              onUpdateNutritionPlan={(updated) => handleUpdateActiveClient({ ...activeClient, nutritionPlan: updated })}
+              viewMode={viewMode}
+            />
+          )}
 
-            {activeTab === 'warmup' && (
-              <WarmupSection
-                warmupPlan={activeClient.workoutProgram.warmupPlan}
-                onUpdateWarmupPlan={(updated) => handleUpdateActiveClient({
-                  ...activeClient,
-                  workoutProgram: {
-                    ...activeClient.workoutProgram,
-                    warmupPlan: updated
-                  }
-                })}
-              />
-            )}
+          {/* TAB 3: ISINMA & BAR PİRAMİDİ (Danışan ve Koç Modu) */}
+          {activeTab === 'warmup' && (
+            <WarmupSection
+              warmupPlan={activeClient.workoutProgram.warmupPlan}
+              onUpdateWarmupPlan={(updated) => handleUpdateActiveClient({
+                ...activeClient,
+                workoutProgram: {
+                  ...activeClient.workoutProgram,
+                  warmupPlan: updated
+                }
+              })}
+            />
+          )}
 
-            {activeTab === 'measurements' && (
-              <MeasurementTracker
-                measurements={activeClient.measurements}
-                onUpdateMeasurements={(updated) => handleUpdateActiveClient({ ...activeClient, measurements: updated })}
-              />
-            )}
-          </div>
-        )}
+          {/* TAB 4: ÖLÇÜM & KİLO TAKİBİ (Danışan ve Koç Modu) */}
+          {activeTab === 'measurements' && (
+            <MeasurementTracker
+              measurements={activeClient.measurements}
+              onUpdateMeasurements={(updated) => handleUpdateActiveClient({ ...activeClient, measurements: updated })}
+            />
+          )}
 
-      </main>
+        </main>
 
-      {/* Yazdırma / PDF Çıktı Görünümü */}
-      <PrintExportView client={activeClient} />
+        {/* Yazdırma / PDF Çıktı Görünümü */}
+        <PrintExportView client={activeClient} />
+
+      </div>
 
       {/* Koç Giriş & Kayıt Modal */}
       <AuthModal
@@ -240,11 +286,6 @@ export default function App() {
         onClose={() => setIsAuthModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
       />
-
-      {/* Sade Alt Bilgi */}
-      <footer className="border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950 py-3.5 text-center text-xs text-slate-500 no-print transition-colors">
-        CoachFit © 2026 • Sade & Bilimsel Antrenman ve Beslenme Sistemi
-      </footer>
 
     </div>
   );
