@@ -5,16 +5,10 @@ import {
   Sparkles, 
   Dumbbell, 
   Flame, 
-  ChevronRight, 
-  ChevronLeft, 
   Copy, 
-  ArrowRight, 
-  Clock, 
   Layers, 
-  Zap,
   Coffee,
-  CheckCircle,
-  HelpCircle
+  CheckCircle
 } from 'lucide-react';
 import ExerciseRow from './ExerciseRow';
 import ExercisePickerModal from './ExercisePickerModal';
@@ -42,7 +36,7 @@ export default function WorkoutBuilder({
     });
   };
 
-  // Progresif Aşırı Yüklenme (Progressive Overload: Haftayı Sonrakine Kopyala)
+  // Progresif Aşırı Yüklenme
   const handleCloneWeekToNext = () => {
     if (activeWeek >= totalWeeks) return;
     const nextWeek = activeWeek + 1;
@@ -53,7 +47,6 @@ export default function WorkoutBuilder({
         const currentW = ex.weeks?.[activeWeek] || {};
         const baseWeight = currentW.actualWeight || currentW.targetWeight || ex.targetWeight || '';
         
-        // Basit sayısal tespit ve +2.5kg artış önerisi
         let nextTargetWeight = baseWeight;
         const numMatch = baseWeight.match(/^(\d+(?:\.\d+)?)/);
         if (numMatch) {
@@ -142,17 +135,17 @@ export default function WorkoutBuilder({
     onUpdateWorkoutProgram({ ...workoutProgram, days: updatedDays });
   };
 
-  // Yeni Hareket Seçildiğinde Ekleme
+  // Yeni Hareket Ekleme
   const handleAddExerciseFromPicker = (exData) => {
     const newEx = {
       id: `ex-${Date.now()}`,
       name: exData.name,
       sets: 2,
       targetReps: "8-10",
-      targetWeight: "Örn: 50 kg",
+      targetWeight: "50 kg",
       rir: exData.defaultRir || "1",
       rpe: exData.defaultRpe || "8.5",
-      percentage: "Hipertrofi Yükleme",
+      percentage: "Hipertrofi",
       tempo: exData.defaultTempo || "2-1-0",
       rest: "90 sn",
       coachNotes: exData.cue || "",
@@ -188,7 +181,7 @@ export default function WorkoutBuilder({
       id: `day-${Date.now()}`,
       dayName: `Gün ${days.length + 1}`,
       title: "Yeni Antrenman Günü",
-      focus: "Hedef Kas Grubu",
+      focus: "Hedef Bölge",
       isRestDay: false,
       exercises: []
     };
@@ -199,51 +192,48 @@ export default function WorkoutBuilder({
     setActiveDayId(newDay.id);
   };
 
-  // Gün Başlığı & Dinlenme Günü Değiştirme
   const handleUpdateCurrentDay = (field, value) => {
     const updatedDays = days.map(d => d.id === activeDayId ? { ...d, [field]: value } : d);
     onUpdateWorkoutProgram({ ...workoutProgram, days: updatedDays });
   };
 
-  // Toplam set sayısı hesabı
   const totalDaySets = (currentDay?.exercises || []).reduce((acc, ex) => acc + (parseInt(ex.sets) || 1), 0);
   const completedExercises = (currentDay?.exercises || []).filter(ex => ex.weeks?.[activeWeek]?.completed).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-5">
       
-      {/* 1. Üst Kontrol Barı: Hafta Seçimi, Progresif Aşırı Yüklenme, Isınma Butonu */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* 1. Sade Üst Çubuk: Program İsmi, Hafta & Progresyon */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 transition-colors">
         
-        {/* Sol: Split Adı & Hafta Seçici */}
+        {/* Sol: Split Adı ve Hafta Butonları */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              Dönem / Blok
+            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              Program
             </span>
             <input
               type="text"
               value={workoutProgram.splitName || ''}
               onChange={(e) => onUpdateWorkoutProgram({ ...workoutProgram, splitName: e.target.value })}
-              className="font-heading font-black text-lg sm:text-xl text-white bg-transparent focus:outline-none focus:border-b focus:border-emerald-500"
+              className="font-heading font-black text-base sm:text-lg text-slate-900 dark:text-white bg-transparent focus:outline-none focus:border-b focus:border-emerald-500"
               placeholder="Split İsmi..."
             />
           </div>
 
-          {/* Hafta Butonları */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-            <span className="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="flex items-center gap-1 overflow-x-auto pb-1">
+            <span className="text-xs font-medium text-slate-500 mr-1 flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" />
               Hafta:
             </span>
             {Array.from({ length: totalWeeks }, (_, i) => i + 1).map((w) => (
               <button
                 key={w}
                 onClick={() => handleSelectWeek(w)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                   activeWeek === w
-                    ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30 ring-2 ring-emerald-400'
-                    : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+                    ? 'bg-slate-900 text-white dark:bg-emerald-500 dark:text-slate-950 shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 H.{w}
@@ -252,38 +242,36 @@ export default function WorkoutBuilder({
           </div>
         </div>
 
-        {/* Sağ: Progresif Yükleme Kopyalama & Isınma Açma */}
+        {/* Sağ: Sade Aksiyon Butonları */}
         <div className="flex items-center gap-2 flex-wrap">
-          
           <button
             onClick={() => setShowWarmup(!showWarmup)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
               showWarmup
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
-            <Flame className="w-4 h-4 text-amber-400" />
-            <span>{showWarmup ? 'Isınmayı Gizle' : 'Isınma & Piramit'}</span>
+            <Flame className="w-3.5 h-3.5 text-amber-500" />
+            <span>{showWarmup ? 'Isınmayı Kapat' : 'Isınma & Piramit'}</span>
           </button>
 
           {viewMode === 'coach' && (
             <button
               onClick={handleCloneWeekToNext}
               disabled={activeWeek >= totalWeeks}
-              title="Mevcut haftanın ağırlıklarını ve tekrarlarını sonraki haftaya +2.5kg progresif yüklenmeyle kopyalar"
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-slate-950 shadow-md shadow-emerald-600/30 transition-all disabled:opacity-40"
+              title="Ağırlıkları +2.5kg artırarak sonraki haftaya kopyalar"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 dark:bg-emerald-400 text-white dark:text-slate-950 hover:bg-emerald-500 shadow-sm transition-all disabled:opacity-40"
             >
-              <Copy className="w-4 h-4" />
+              <Copy className="w-3.5 h-3.5" />
               <span>Hafta {activeWeek + 1}'e Kopyala (+2.5kg)</span>
             </button>
           )}
-
         </div>
 
       </div>
 
-      {/* Isınma Alanı (Açılır/Kapanır) */}
+      {/* Isınma Alanı */}
       {showWarmup && (
         <WarmupSection
           warmupPlan={workoutProgram.warmupPlan}
@@ -291,8 +279,8 @@ export default function WorkoutBuilder({
         />
       )}
 
-      {/* 2. Gün Seçim Sekmeleri (Tabs) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
+      {/* 2. Gün Seçim Sekmeleri (Minimal Tabs) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
         {days.map((day) => {
           const isActive = day.id === activeDayId;
           const isRest = day.isRestDay;
@@ -302,18 +290,18 @@ export default function WorkoutBuilder({
             <button
               key={day.id}
               onClick={() => setActiveDayId(day.id)}
-              className={`flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border ${
+              className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border ${
                 isActive
-                  ? 'bg-slate-800 text-white border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500'
-                  : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-emerald-500 shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/80 dark:hover:bg-slate-800'
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${
-                isRest ? 'bg-amber-400' : isActive ? 'bg-emerald-400' : 'bg-slate-600'
+                isRest ? 'bg-amber-400' : isActive ? 'bg-emerald-500' : 'bg-slate-400'
               }`} />
               <div className="text-left">
-                <span className="block font-black text-slate-100">{day.dayName}</span>
-                <span className="text-[10px] text-slate-400 font-normal">
+                <span className="block font-bold">{day.dayName}</span>
+                <span className="text-[10px] opacity-75 font-normal">
                   {isRest ? 'Dinlenme' : `${exCount} Hareket`}
                 </span>
               </div>
@@ -324,48 +312,47 @@ export default function WorkoutBuilder({
         {viewMode === 'coach' && (
           <button
             onClick={handleAddDay}
-            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-emerald-400 bg-slate-900/60 hover:bg-slate-800 border border-dashed border-slate-700 hover:border-emerald-500/50 transition-all flex-shrink-0"
+            className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-emerald-400 border border-dashed border-slate-300 dark:border-slate-700 transition-all flex-shrink-0"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>Yeni Gün</span>
           </button>
         )}
       </div>
 
-      {/* 3. Aktif Gün Detay Kartı & Hareket Listesi */}
+      {/* 3. Gün Kartı & Hareket Listesi */}
       {currentDay && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           
-          {/* Gün Başlığı & Özet Bilgi */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <span className="text-xs uppercase font-extrabold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+          {/* Gün Başlık & Bilgi Barı */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm transition-colors">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs uppercase font-extrabold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                   {currentDay.dayName}
                 </span>
-                
+
                 {viewMode === 'coach' ? (
                   <input
                     type="text"
                     value={currentDay.title}
                     onChange={(e) => handleUpdateCurrentDay('title', e.target.value)}
-                    className="font-heading font-black text-lg sm:text-xl text-white bg-transparent focus:outline-none focus:border-b focus:border-emerald-500"
+                    className="font-heading font-black text-base sm:text-lg text-slate-900 dark:text-white bg-transparent focus:outline-none focus:border-b focus:border-emerald-500"
                     placeholder="Gün Başlığı (Örn: Upper / Push)..."
                   />
                 ) : (
-                  <h2 className="font-heading font-black text-lg sm:text-xl text-white">
+                  <h2 className="font-heading font-black text-base sm:text-lg text-slate-900 dark:text-white">
                     {currentDay.title}
                   </h2>
                 )}
 
-                {/* Dinlenme Günü Toggle */}
                 {viewMode === 'coach' && (
                   <button
                     onClick={() => handleUpdateCurrentDay('isRestDay', !currentDay.isRestDay)}
-                    className={`ml-2 text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all ${
+                    className={`text-[11px] px-2 py-0.5 rounded border font-semibold transition-all ${
                       currentDay.isRestDay
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                        : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
+                        ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40'
+                        : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
                     }`}
                   >
                     {currentDay.isRestDay ? '💤 Dinlenme Günü' : 'İdman Günü'}
@@ -378,79 +365,64 @@ export default function WorkoutBuilder({
                   type="text"
                   value={currentDay.focus || ''}
                   onChange={(e) => handleUpdateCurrentDay('focus', e.target.value)}
-                  className="text-xs text-slate-400 bg-transparent w-full focus:outline-none focus:border-b focus:border-slate-600"
-                  placeholder="Hedef Odak Noktası (örn: Göğüs, Sırt, Omuz, Kollar)..."
+                  className="text-xs text-slate-500 dark:text-slate-400 bg-transparent w-full focus:outline-none focus:border-b focus:border-slate-300 dark:focus:border-slate-700 mt-1"
+                  placeholder="Hedef Bölge (Örn: Göğüs, Sırt, Omuz, Kollar)..."
                 />
               ) : (
-                <p className="text-xs text-slate-400">
-                  🎯 Odak: {currentDay.focus || 'Genel Kuvvet'}
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Odak: {currentDay.focus || 'Genel Kuvvet'}
                 </p>
               )}
             </div>
 
-            {/* İstatistikler & Hareket Ekle Butonu */}
+            {/* Sağ: İstatistik & Hareket Ekle */}
             <div className="flex items-center gap-3">
               {!currentDay.isRestDay && (
-                <div className="flex items-center gap-3 text-xs bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-700/60">
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <Layers className="w-4 h-4 text-emerald-400" />
-                    <span><strong>{currentDay.exercises?.length || 0}</strong> Hareket</span>
-                  </div>
-                  <span className="text-slate-600">|</span>
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <Dumbbell className="w-4 h-4 text-cyan-400" />
-                    <span><strong>{totalDaySets}</strong> Toplam Set</span>
-                  </div>
-                  <span className="text-slate-600">|</span>
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    <span><strong>{completedExercises}/{currentDay.exercises?.length || 0}</strong> Tamamlandı</span>
-                  </div>
+                <div className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80">
+                  <span><strong>{currentDay.exercises?.length || 0}</strong> Hareket</span>
+                  <span className="text-slate-300 dark:text-slate-600">•</span>
+                  <span><strong>{totalDaySets}</strong> Set</span>
+                  <span className="text-slate-300 dark:text-slate-600">•</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{completedExercises}/{currentDay.exercises?.length || 0} Tamam</span>
                 </div>
               )}
 
               {viewMode === 'coach' && !currentDay.isRestDay && (
                 <button
                   onClick={() => setIsPickerOpen(true)}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 dark:bg-emerald-400 text-white dark:text-slate-950 font-bold rounded-xl text-xs hover:bg-emerald-500 transition-all shadow-sm"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5" />
                   <span>Hareket Ekle</span>
                 </button>
               )}
             </div>
           </div>
 
-          {/* Dinlenme Günü Mesajı */}
+          {/* Dinlenme Günü Kartı */}
           {currentDay.isRestDay ? (
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 mx-auto flex items-center justify-center">
-                <Coffee className="w-6 h-6" />
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center space-y-2 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
+                <Coffee className="w-5 h-5" />
               </div>
-              <h3 className="font-heading font-bold text-white text-lg">Bugün Dinlenme & Toparlanma Günü (Rest Day)</h3>
-              <p className="text-xs text-slate-400 max-w-md mx-auto">
-                Kas gelişimi ağırlık çalışırken değil, dinlenirken ve beslenirken gerçekleşir. Bol su için, protein hedefinizi tamamlayın ve en az 8.000 adım atın.
+              <h3 className="font-bold text-slate-900 dark:text-white text-base">Dinlenme & Toparlanma Günü (Rest Day)</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                Kas gelişimi dinlenme ve beslenme ile olur. Su tüketimini tamamlayın ve yürüyüş yapın.
               </p>
             </div>
           ) : (
             /* Hareket Listesi */
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {(currentDay.exercises || []).length === 0 ? (
-                <div className="bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-10 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-800 text-slate-500 mx-auto flex items-center justify-center">
-                    <Dumbbell className="w-6 h-6" />
-                  </div>
-                  <h4 className="font-bold text-white text-sm">Bu güne henüz hareket eklenmemiş</h4>
-                  <p className="text-xs text-slate-400">
-                    Yukarıdaki "Hareket Ekle" butonuna basarak kütüphaneden veya özel hareket tanımlayabilirsiniz.
-                  </p>
+                <div className="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-8 text-center space-y-2">
+                  <p className="text-xs text-slate-500">Bu günde henüz hareket yok.</p>
                   {viewMode === 'coach' && (
                     <button
                       onClick={() => setIsPickerOpen(true)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs mt-2"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 dark:bg-emerald-400 text-white dark:text-slate-950 font-bold rounded-lg text-xs"
                     >
-                      <Plus className="w-4 h-4" />
-                      İlk Hareketi Ekle
+                      <Plus className="w-3.5 h-3.5" />
+                      Hareket Ekle
                     </button>
                   )}
                 </div>

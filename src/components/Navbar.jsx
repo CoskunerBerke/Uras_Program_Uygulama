@@ -12,7 +12,8 @@ import {
   Eye, 
   Edit3, 
   LineChart,
-  Activity,
+  Sun,
+  Moon,
   Menu,
   X
 } from 'lucide-react';
@@ -22,6 +23,8 @@ export default function Navbar({
   setActiveTab,
   viewMode,
   setViewMode,
+  theme,
+  setTheme,
   clients,
   activeClientId,
   setActiveClientId,
@@ -47,74 +50,71 @@ export default function Navbar({
   };
 
   const navItems = [
-    { id: 'workout', label: 'Antrenman Programı', icon: Dumbbell, desc: 'Hareketler, RIR, RPE, Tempo' },
-    { id: 'nutrition', label: 'Diyet & Makro / Mikro', icon: Utensils, desc: 'Kalori, Öğünler, Su, Tuz' },
-    { id: 'warmup', label: 'Isınma & Hesaplayıcı', icon: Flame, desc: 'McGill Big 3, Bar Piramidi' },
-    { id: 'measurements', label: 'Ölçüm & Kilo Takibi', icon: LineChart, desc: 'Tartı, Adım, Bölgesel' },
+    { id: 'workout', label: 'Antrenman Programı', icon: Dumbbell },
+    { id: 'nutrition', label: 'Diyet & Makrolar', icon: Utensils },
+    { id: 'warmup', label: 'Isınma & Piramit', icon: Flame },
+    { id: 'measurements', label: 'Ölçüm & Takip', icon: LineChart },
   ];
 
   return (
     <>
-      <header className="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 no-print">
+      <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 no-print transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             
-            {/* Logo & Danışan Seçici */}
-            <div className="flex items-center gap-3 sm:gap-6">
+            {/* Sol: Logo & Danışan Seçici */}
+            <div className="flex items-center gap-3 sm:gap-5">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                  <Dumbbell className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm shadow-emerald-600/20">
+                  <Dumbbell className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-heading font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-heading font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
                       CoachFit
                     </span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      Pro
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400">
+                      Sade
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 hidden sm:block">Akıllı Koçluk & Program Sistemi</p>
                 </div>
               </div>
 
-              {/* Danışan Seçim Dropdown */}
-              <div className="relative flex items-center">
-                <div className="flex items-center bg-slate-800/80 border border-slate-700/80 rounded-lg p-1">
-                  <span className="text-xs text-slate-400 px-2 font-medium hidden md:inline">Danışan:</span>
-                  <select
-                    value={activeClientId}
-                    onChange={(e) => {
-                      if (e.target.value === '__add__') {
-                        setIsClientModalOpen(true);
-                      } else {
-                        setActiveClientId(e.target.value);
-                      }
-                    }}
-                    className="bg-transparent text-xs sm:text-sm font-semibold text-emerald-400 focus:outline-none cursor-pointer pr-1 py-1"
-                  >
-                    {clients.map(c => (
-                      <option key={c.id} value={c.id} className="bg-slate-900 text-slate-200">
-                        👤 {c.name} {c.goal ? `(${c.goal})` : ''}
-                      </option>
-                    ))}
-                    <option value="__add__" className="bg-slate-900 text-emerald-400 font-bold">
-                      + Yeni Danışan Ekle...
+              {/* Danışan Dropdown */}
+              <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-lg p-1">
+                <span className="text-xs text-slate-500 dark:text-slate-400 px-2 font-medium hidden sm:inline">Danışan:</span>
+                <select
+                  value={activeClientId}
+                  onChange={(e) => {
+                    if (e.target.value === '__add__') {
+                      setIsClientModalOpen(true);
+                    } else {
+                      setActiveClientId(e.target.value);
+                    }
+                  }}
+                  className="bg-transparent text-xs sm:text-sm font-semibold text-slate-800 dark:text-emerald-400 focus:outline-none cursor-pointer pr-1 py-0.5"
+                >
+                  {clients.map(c => (
+                    <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+                      {c.name} {c.goal ? `(${c.goal})` : ''}
                     </option>
-                  </select>
-                </div>
+                  ))}
+                  <option value="__add__" className="bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 font-bold">
+                    + Yeni Danışan Ekle...
+                  </option>
+                </select>
 
                 <button
                   onClick={() => setIsClientModalOpen(true)}
                   title="Yeni Danışan Ekle"
-                  className="ml-1.5 p-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 transition-colors"
+                  className="p-1 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Desktop Nav Tabs */}
+            {/* Orta: Minimal Navigasyon Sekmeleri */}
             <nav className="hidden lg:flex items-center space-x-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -123,30 +123,43 @@ export default function Navbar({
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                       isActive
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                        ? 'bg-slate-900 text-white dark:bg-emerald-500 dark:text-slate-950 shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                    <Icon className="w-3.5 h-3.5" />
                     <span>{item.label}</span>
                   </button>
                 );
               })}
             </nav>
 
-            {/* Sağ Araçlar: Mod Switch & Yazdır & Dışa Aktar */}
+            {/* Sağ: Tema (Açık/Koyu) & Mod & Butonlar */}
             <div className="flex items-center gap-2">
               
-              {/* Görünüm Modu: Koç / Danışan */}
-              <div className="bg-slate-800/90 p-0.5 rounded-xl border border-slate-700/80 flex items-center shadow-inner">
+              {/* Tema Değiştirici (Açık / Koyu Mod) */}
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+                className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-700" />
+                )}
+              </button>
+
+              {/* Koç / Danışan Görünümü */}
+              <div className="bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center">
                 <button
                   onClick={() => setViewMode('coach')}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
                     viewMode === 'coach'
-                      ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-white text-slate-900 dark:bg-emerald-500 dark:text-slate-950 shadow-sm'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                   title="Antrenör Düzenleme Modu"
                 >
@@ -155,43 +168,43 @@ export default function Navbar({
                 </button>
                 <button
                   onClick={() => setViewMode('client')}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
                     viewMode === 'client'
-                      ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-white text-slate-900 dark:bg-emerald-500 dark:text-slate-950 shadow-sm'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                   title="Danışan Görünümü (Salonda Kullanım)"
                 >
                   <Eye className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Danışan Görünümü</span>
+                  <span className="hidden sm:inline">Danışan</span>
                 </button>
               </div>
 
-              {/* Yazdır / PDF */}
+              {/* Yazdır */}
               <button
                 onClick={onPrint}
                 title="Yazdır / PDF Olarak Kaydet"
-                className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors"
+                className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors"
               >
-                <Printer className="w-3.5 h-3.5 text-slate-400" />
+                <Printer className="w-3.5 h-3.5" />
                 <span>Yazdır</span>
               </button>
 
               {/* Dışa Aktar */}
               <button
                 onClick={onExportJson}
-                title="Verileri JSON Yedekle"
-                className="hidden sm:flex items-center gap-1 p-1.5 text-slate-400 hover:text-slate-200 bg-slate-800/70 hover:bg-slate-800 border border-slate-700/80 rounded-lg transition-colors"
+                title="JSON Yedek İndir"
+                className="hidden sm:flex items-center p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3.5 h-3.5" />
               </button>
 
               {/* İçe Aktar */}
               <label 
-                title="JSON Yedekten Geri Yükle" 
-                className="hidden sm:flex items-center cursor-pointer p-1.5 text-slate-400 hover:text-slate-200 bg-slate-800/70 hover:bg-slate-800 border border-slate-700/80 rounded-lg transition-colors"
+                title="JSON Yedekten Yükle" 
+                className="hidden sm:flex items-center cursor-pointer p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors"
               >
-                <Upload className="w-4 h-4" />
+                <Upload className="w-3.5 h-3.5" />
                 <input
                   type="file"
                   accept=".json"
@@ -204,25 +217,25 @@ export default function Navbar({
               <button
                 onClick={onResetData}
                 title="Örnek Veriye Sıfırla"
-                className="hidden sm:flex items-center p-1.5 text-slate-400 hover:text-rose-400 bg-slate-800/70 hover:bg-slate-800 border border-slate-700/80 rounded-lg transition-colors"
+                className="hidden sm:flex items-center p-1.5 text-slate-400 hover:text-rose-500 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
 
-              {/* Mobile Menu Button */}
+              {/* Mobil Menü Butonu */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none"
+                className="lg:hidden p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobil Menü */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-800 bg-slate-900/95 px-4 pt-2 pb-4 space-y-1">
+          <div className="lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 pt-2 pb-4 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -233,40 +246,37 @@ export default function Navbar({
                     setActiveTab(item.id);
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold ${
                     isActive
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                      : 'text-slate-300 hover:bg-slate-800'
+                      ? 'bg-slate-900 text-white dark:bg-emerald-500 dark:text-slate-950'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </div>
-                  <span className="text-xs text-slate-500">{item.desc}</span>
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
                 </button>
               );
             })}
-            <div className="pt-3 border-t border-slate-800 flex items-center justify-around">
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <button
                 onClick={onPrint}
-                className="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-800 px-3 py-2 rounded-lg"
+                className="flex items-center gap-1 text-xs text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg"
               >
-                <Printer className="w-4 h-4 text-emerald-400" />
-                Yazdır / PDF
+                <Printer className="w-3.5 h-3.5" />
+                Yazdır
               </button>
               <button
                 onClick={onExportJson}
-                className="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-800 px-3 py-2 rounded-lg"
+                className="flex items-center gap-1 text-xs text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg"
               >
-                <Download className="w-4 h-4 text-emerald-400" />
-                JSON İndir
+                <Download className="w-3.5 h-3.5" />
+                Yedek İndir
               </button>
               <button
                 onClick={onResetData}
-                className="flex items-center gap-1.5 text-xs text-rose-300 bg-rose-500/10 px-3 py-2 rounded-lg border border-rose-500/20"
+                className="flex items-center gap-1 text-xs text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-3 py-1.5 rounded-lg"
               >
-                <RotateCcw className="w-4 h-4 text-rose-400" />
+                <RotateCcw className="w-3.5 h-3.5" />
                 Sıfırla
               </button>
             </div>
@@ -274,21 +284,21 @@ export default function Navbar({
         )}
       </header>
 
-      {/* Yeni Danışan Ekleme Modalı */}
+      {/* Yeni Danışan Modal */}
       {isClientModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-emerald-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl text-slate-900 dark:text-white">
+            <h3 className="text-base font-bold flex items-center gap-2">
+              <UserCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               Yeni Danışan Oluştur
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
-              Danışanınız için sıfırdan veya şablon üzerinden program ve diyet hazırlayabilirsiniz.
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Danışanınız için sıfırdan veya şablon üzerinden program ve diyet hazırlayın.
             </p>
 
-            <form onSubmit={handleCreateClient} className="mt-4 space-y-4">
+            <form onSubmit={handleCreateClient} className="mt-4 space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Danışan Adı & Soyadı
                 </label>
                 <input
@@ -297,18 +307,18 @@ export default function Navbar({
                   placeholder="Örn: Ahmet Yılmaz"
                   value={newClientName}
                   onChange={(e) => setNewClientName(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Hedef & Seviye
                 </label>
                 <select
                   value={newClientGoal}
                   onChange={(e) => setNewClientGoal(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                 >
                   <option value="Hipertrofi / Kütle (Bulk)">Hipertrofi / Kütle (Bulk)</option>
                   <option value="Definasyon / Yağ Yakımı (Cut)">Definasyon / Yağ Yakımı (Cut)</option>
@@ -322,13 +332,13 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => setIsClientModalOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition-colors"
+                  className="px-3.5 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
                 >
                   İptal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg shadow-lg shadow-emerald-500/20 transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-white dark:text-slate-950 bg-emerald-600 dark:bg-emerald-400 hover:bg-emerald-500 dark:hover:bg-emerald-300 rounded-xl transition-colors shadow-sm"
                 >
                   Danışanı Oluştur
                 </button>

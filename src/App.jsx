@@ -8,9 +8,26 @@ import ClientPortal from './components/ClientView/ClientPortal';
 import PrintExportView from './components/PrintView/PrintExportView';
 import { DEFAULT_CLIENT } from './data/defaultData';
 
-const LOCAL_STORAGE_KEY = 'coachfit_clients_v2';
+const LOCAL_STORAGE_KEY = 'coachfit_clients_v3';
+const THEME_STORAGE_KEY = 'coachfit_theme';
 
 export default function App() {
+  // Tema Durumu (Açık / Koyu)
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem(THEME_STORAGE_KEY) || 'light';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
+  // Danışanlar
   const [clients, setClients] = useState(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -31,7 +48,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('workout'); // 'workout' | 'nutrition' | 'warmup' | 'measurements'
   const [viewMode, setViewMode] = useState('coach'); // 'coach' | 'client'
 
-  // LocalStorage senkronizasyonu
   useEffect(() => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clients));
@@ -40,15 +56,12 @@ export default function App() {
     }
   }, [clients]);
 
-  // Aktif danışanı bul
   const activeClient = clients.find(c => c.id === activeClientId) || clients[0] || DEFAULT_CLIENT;
 
-  // Danışan Güncelleme
   const handleUpdateActiveClient = (updated) => {
     setClients(prev => prev.map(c => c.id === updated.id ? updated : c));
   };
 
-  // Yeni Danışan Ekleme
   const handleAddNewClient = (name, goal) => {
     const newId = `client-${Date.now()}`;
     const newClient = {
@@ -59,7 +72,7 @@ export default function App() {
       startDate: new Date().toISOString().split('T')[0],
       workoutProgram: {
         ...DEFAULT_CLIENT.workoutProgram,
-        splitName: `${name} - Hipertrofi Programı`,
+        splitName: `${name} - Programı`,
         activeWeek: 1
       },
       nutritionPlan: {
@@ -72,7 +85,6 @@ export default function App() {
     setActiveClientId(newId);
   };
 
-  // JSON Olarak Dışa Aktar (Yedek)
   const handleExportJson = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(clients, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -83,7 +95,6 @@ export default function App() {
     downloadAnchor.remove();
   };
 
-  // JSON Yedekten İçe Aktar
   const handleImportJson = (e) => {
     const fileReader = new FileReader();
     if (!e.target.files?.[0]) return;
@@ -94,9 +105,9 @@ export default function App() {
         if (Array.isArray(parsed) && parsed.length > 0) {
           setClients(parsed);
           setActiveClientId(parsed[0].id);
-          alert("Program başarıyla içe aktarıldı!");
+          alert("Program başarıyla yüklendi!");
         } else {
-          alert("Geçersiz yedek dosyası formatı!");
+          alert("Geçersiz yedek dosyası!");
         }
       } catch (err) {
         alert("Dosya okunamadı: " + err.message);
@@ -104,7 +115,6 @@ export default function App() {
     };
   };
 
-  // Veriyi Orijinal Google Sheet Örneğine Sıfırla
   const handleResetData = () => {
     if (window.confirm("Tüm değişiklikleri sıfırlayıp e-tablodaki orijinal Berke antrenman & beslenme verilerine dönmek istiyor musunuz?")) {
       setClients([DEFAULT_CLIENT]);
@@ -113,13 +123,12 @@ export default function App() {
     }
   };
 
-  // Yazdır / PDF
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       
       {/* Üst Gezinme & Başlık */}
       <Navbar
@@ -127,6 +136,8 @@ export default function App() {
         setActiveTab={setActiveTab}
         viewMode={viewMode}
         setViewMode={setViewMode}
+        theme={theme}
+        setTheme={setTheme}
         clients={clients}
         activeClientId={activeClientId}
         setActiveClientId={setActiveClientId}
@@ -138,7 +149,7 @@ export default function App() {
       />
 
       {/* Ana Gövde */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-print">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6 no-print">
         
         {/* Mod 1: Danışan Görünümü (Sporcu Modu) */}
         {viewMode === 'client' ? (
@@ -190,12 +201,12 @@ export default function App() {
 
       </main>
 
-      {/* Yazdırma / PDF Çıktı Görünümü (Yalnızca Print anında aktif) */}
+      {/* Yazdırma / PDF Çıktı Görünümü */}
       <PrintExportView client={activeClient} />
 
-      {/* Alt Bilgi */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-4 text-center text-xs text-slate-500 no-print">
-        CoachFit Pro © 2026 • Bilimsel Antrenman, RIR/RPE Progresyonu & Hassas Beslenme Sistemi
+      {/* Sade Alt Bilgi */}
+      <footer className="border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950 py-3.5 text-center text-xs text-slate-500 no-print transition-colors">
+        CoachFit © 2026 • Sade & Bilimsel Antrenman ve Beslenme Sistemi
       </footer>
 
     </div>

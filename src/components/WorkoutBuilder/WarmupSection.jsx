@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Flame, Calculator, CheckCircle2, Circle, ShieldAlert, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Flame, Calculator, CheckCircle2, Circle, ShieldAlert } from 'lucide-react';
 import { calculateWarmupPyramid } from '../../data/defaultData';
 
 export default function WarmupSection({ warmupPlan, onUpdateWarmupPlan }) {
@@ -27,75 +27,68 @@ export default function WarmupSection({ warmupPlan, onUpdateWarmupPlan }) {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-6">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 text-slate-900 dark:text-white transition-colors">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-md shadow-amber-500/5">
+      {/* Üst Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
             <Flame className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-heading font-bold text-white text-lg flex items-center gap-2">
-              Isınma Protokolleri & 1-5 RM Piramidi
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
-                Sakatlık Önleme
-              </span>
-            </h3>
-            <p className="text-xs text-slate-400">
-              E-Tablodaki McGill Big 3, dinamik bacak hareketleri ve bar yükleme hesaplayıcısı
-            </p>
+            <h3 className="font-bold text-base">Isınma & 1-5 RM Bar Piramidi</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">McGill Big 3 ve çalışma ağırlığına göre hesaplanan ısınma basamakları</p>
           </div>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/80">
+        {/* Sekmeler */}
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
           <button
             onClick={() => setActiveTab('pyramid')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
               activeTab === 'pyramid'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm font-bold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            🔥 Bar Piramit Hesaplayıcı
+            🔥 Bar Piramidi
           </button>
           <button
             onClick={() => setActiveTab('mcgill')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
               activeTab === 'mcgill'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm font-bold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             🛡️ McGill Big 3
           </button>
           <button
             onClick={() => setActiveTab('leg')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
               activeTab === 'leg'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm font-bold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            🦵 Bacak & Kalça Isınması
+            🦵 Bacak Isınması
           </button>
         </div>
       </div>
 
-      {/* Tab 1: 1-5 Tekrar Isınma Piramidi Hesaplayıcı */}
+      {/* Piramit Hesaplayıcı */}
       {activeTab === 'pyramid' && (
-        <div className="space-y-4">
-          <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-3">
+          <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <span className="text-xs font-bold text-amber-400 block mb-1">
-                Çalışma Ağırlığınızı Girin (Working Set Weight):
+              <span className="text-xs font-bold text-slate-800 dark:text-amber-400 block">
+                Çalışma Ağırlığınız (Working Weight):
               </span>
-              <p className="text-xs text-slate-400">
-                Bench Press, Squat veya Deadlift'te yapacağınız asıl ağırlığı yazın; sistem ısınma setlerinizi otomatik böler.
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Hedef seti yazın, boş bardan itibaren basamaklar otomatik hesaplansın.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <input
                 type="number"
                 min="20"
@@ -103,136 +96,103 @@ export default function WarmupSection({ warmupPlan, onUpdateWarmupPlan }) {
                 step="2.5"
                 value={workingWeight}
                 onChange={(e) => setWorkingWeight(parseFloat(e.target.value) || 20)}
-                className="w-28 bg-slate-800 border-2 border-amber-500/60 rounded-xl px-3 py-2 text-lg font-bold text-white text-center focus:outline-none focus:border-amber-400"
+                className="w-20 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-2.5 py-1 text-base font-bold text-center focus:outline-none focus:border-amber-500"
               />
-              <span className="text-sm font-bold text-slate-300">kg</span>
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">kg</span>
             </div>
           </div>
 
-          {/* Piramit Kartları */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             {pyramid.map((step) => (
               <div
                 key={step.step}
-                className={`p-4 rounded-xl border transition-all ${
+                className={`p-3 rounded-xl border text-xs ${
                   step.isWorkingSet
-                    ? 'bg-emerald-950/30 border-emerald-500/40 shadow-lg shadow-emerald-500/10'
-                    : 'bg-slate-800/60 border-slate-700/60'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-500/40'
+                    : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-full ${
-                    step.isWorkingSet ? 'bg-emerald-500 text-slate-950' : 'bg-slate-700 text-slate-300'
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    step.isWorkingSet ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                   }`}>
-                    Adım {step.step}: {step.loadDesc}
+                    {step.loadDesc}
                   </span>
-                  <span className="text-xs font-bold text-slate-400">
-                    {step.reps}
-                  </span>
+                  <span className="font-semibold text-slate-500">{step.reps}</span>
                 </div>
-
-                <div className="flex items-baseline gap-1 my-1">
-                  <span className={`text-2xl font-black ${step.isWorkingSet ? 'text-emerald-400' : 'text-white'}`}>
-                    {step.weight}
-                  </span>
-                  <span className="text-xs text-slate-400 font-bold">kg</span>
+                <div className="text-xl font-black mt-1">
+                  {step.weight} <span className="text-xs font-normal text-slate-500">kg</span>
                   {step.weight > 20 && (
-                    <span className="text-[11px] text-slate-400 ml-2">
-                      (Her yana: <strong>{((step.weight - 20) / 2).toFixed(1)} kg</strong>)
+                    <span className="text-[10px] text-slate-400 font-normal ml-2">
+                      (Yana: {((step.weight - 20) / 2).toFixed(1)} kg)
                     </span>
                   )}
                 </div>
-
-                <p className="text-[11px] text-slate-400 mt-2 italic">
-                  💡 {step.note}
-                </p>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Tab 2: McGill Big 3 */}
+      {/* McGill Big 3 */}
       {activeTab === 'mcgill' && (
-        <div className="space-y-4">
-          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-3 text-xs text-amber-300">
-            <ShieldAlert className="w-5 h-5 flex-shrink-0 text-amber-400" />
-            <span>
-              <strong>Dr. Stuart McGill Protokolü:</strong> Omurga stabilitesini artırmak ve bel sakatlıklarını tamamen önlemek için her ağır idmandan önce zorunludur.
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {warmupPlan?.mcGillBig3?.map((item, idx) => (
-              <div
-                key={idx}
-                onClick={() => toggleMcgillItem(idx)}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
-                  item.done
-                    ? 'bg-slate-900/60 border-emerald-500/40 text-slate-400'
-                    : 'bg-slate-800/80 border-slate-700/80 hover:border-slate-600 text-slate-100'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {item.done ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                  ) : (
-                    <Circle className="w-5 h-5 text-slate-500 flex-shrink-0" />
-                  )}
-                  <div>
-                    <span className={`text-sm font-bold block ${item.done ? 'line-through text-slate-500' : 'text-white'}`}>
-                      {item.name}
-                    </span>
-                    <span className="text-xs text-amber-400/90 font-medium">
-                      {item.reps}
-                    </span>
-                  </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          {warmupPlan?.mcGillBig3?.map((item, idx) => (
+            <div
+              key={idx}
+              onClick={() => toggleMcgillItem(idx)}
+              className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between text-xs ${
+                item.done
+                  ? 'bg-slate-50 dark:bg-slate-800/40 border-emerald-300 dark:border-emerald-500/30 text-slate-400'
+                  : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                {item.done ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                ) : (
+                  <Circle className="w-4 h-4 text-slate-300 dark:text-slate-600 flex-shrink-0" />
+                )}
+                <div>
+                  <span className={`font-bold block ${item.done ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'}`}>
+                    {item.name}
+                  </span>
+                  <span className="text-[11px] text-amber-600 dark:text-amber-400">{item.reps}</span>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Tab 3: Bacak & Kalça Isınması */}
+      {/* Bacak Isınması */}
       {activeTab === 'leg' && (
-        <div className="space-y-4">
-          <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-3 text-xs text-blue-300">
-            <Flame className="w-5 h-5 flex-shrink-0 text-blue-400" />
-            <span>
-              <strong>Bacak ve Kalça Dinamik Mobilizasyonu:</strong> Kalça mobilitesini, ayak bileği açısını ve diz eklemini squats/deadlifts için hazırlar.
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {warmupPlan?.legWarmup?.map((item, idx) => (
-              <div
-                key={idx}
-                onClick={() => toggleLegWarmupItem(idx)}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
-                  item.done
-                    ? 'bg-slate-900/60 border-emerald-500/40 text-slate-400'
-                    : 'bg-slate-800/80 border-slate-700/80 hover:border-slate-600 text-slate-100'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {item.done ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                  ) : (
-                    <Circle className="w-5 h-5 text-slate-500 flex-shrink-0" />
-                  )}
-                  <div>
-                    <span className={`text-sm font-bold block ${item.done ? 'line-through text-slate-500' : 'text-white'}`}>
-                      {item.name}
-                    </span>
-                    <span className="text-xs text-blue-400 font-medium">
-                      {item.reps}
-                    </span>
-                  </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          {warmupPlan?.legWarmup?.map((item, idx) => (
+            <div
+              key={idx}
+              onClick={() => toggleLegWarmupItem(idx)}
+              className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between text-xs ${
+                item.done
+                  ? 'bg-slate-50 dark:bg-slate-800/40 border-emerald-300 dark:border-emerald-500/30 text-slate-400'
+                  : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                {item.done ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                ) : (
+                  <Circle className="w-4 h-4 text-slate-300 dark:text-slate-600 flex-shrink-0" />
+                )}
+                <div>
+                  <span className={`font-bold block ${item.done ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'}`}>
+                    {item.name}
+                  </span>
+                  <span className="text-[11px] text-blue-600 dark:text-blue-400">{item.reps}</span>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       )}
 

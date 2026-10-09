@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LineChart, Scale, Footprints, Ruler, TrendingUp, Calendar, Plus } from 'lucide-react';
+import { Scale, Footprints, Ruler, TrendingUp } from 'lucide-react';
 
 export default function MeasurementTracker({ measurements, onUpdateMeasurements }) {
   const [dailyWeights, setDailyWeights] = useState(measurements?.dailyWeights || {
@@ -23,16 +23,13 @@ export default function MeasurementTracker({ measurements, onUpdateMeasurements 
   });
 
   const [history, setHistory] = useState(measurements?.history || []);
-
   const daysOfWeek = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
 
-  // Haftalık Tartı Ortalaması
   const weightValues = Object.values(dailyWeights).filter(v => v > 0);
   const avgWeight = weightValues.length > 0 
     ? (weightValues.reduce((a, b) => a + parseFloat(b), 0) / weightValues.length).toFixed(2)
     : 0;
 
-  // Haftalık Adım Ortalaması
   const stepValues = Object.values(dailySteps).filter(v => v > 0);
   const avgSteps = stepValues.length > 0
     ? Math.round(stepValues.reduce((a, b) => a + parseInt(b), 0) / stepValues.length)
@@ -57,98 +54,86 @@ export default function MeasurementTracker({ measurements, onUpdateMeasurements 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-5 text-slate-900 dark:text-white transition-colors">
       
-      {/* Üst Kartlar: Haftalık Tartı Ortalaması & Adım Ortalaması */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs uppercase font-bold text-slate-400">Bu Haftanın Tartı Ortalaması</span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl font-black text-emerald-400">{avgWeight}</span>
-              <span className="text-sm font-bold text-slate-400">kg</span>
+      {/* 3'lü Özet Kartlar */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-xs uppercase font-bold text-slate-500">Haftalık Tartı Ortalaması</span>
+            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+              {avgWeight} <span className="text-xs font-normal text-slate-500">kg</span>
             </div>
-            <span className="text-[11px] text-slate-500">Günlük dalgalanmalar elenmiş net ağırlık</span>
           </div>
-          <div className="p-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
-            <Scale className="w-6 h-6" />
+          <div className="p-2.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
+            <Scale className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs uppercase font-bold text-slate-400">Haftalık Günlük Adım Ortalaması</span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl font-black text-cyan-400">{avgSteps.toLocaleString()}</span>
-              <span className="text-sm font-bold text-slate-400">adım</span>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-xs uppercase font-bold text-slate-500">Günlük Adım Ortalaması</span>
+            <div className="text-2xl font-black text-cyan-600 dark:text-cyan-400 mt-1">
+              {avgSteps.toLocaleString()} <span className="text-xs font-normal text-slate-500">adım</span>
             </div>
-            <span className="text-[11px] text-slate-500">NEAT & Günlük kalori harcaması takibi</span>
           </div>
-          <div className="p-3 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-xl">
-            <Footprints className="w-6 h-6" />
+          <div className="p-2.5 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 rounded-xl">
+            <Footprints className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex items-center justify-between sm:col-span-2 lg:col-span-1">
-          <div className="space-y-1">
-            <span className="text-xs uppercase font-bold text-slate-400">Kilo Değişim Trendi</span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl font-black text-amber-400">+0.40</span>
-              <span className="text-sm font-bold text-slate-400">kg / hafta</span>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-xs uppercase font-bold text-slate-500">Kilo Değişim Trendi</span>
+            <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
+              +0.40 <span className="text-xs font-normal text-slate-500">kg/hf</span>
             </div>
-            <span className="text-[11px] text-emerald-400 font-semibold">✓ Temiz Bulk aralığında (+%0.5 BW)</span>
           </div>
-          <div className="p-3 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl">
-            <TrendingUp className="w-6 h-6" />
+          <div className="p-2.5 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
+            <TrendingUp className="w-5 h-5" />
           </div>
         </div>
-
       </div>
 
-      {/* Günlük Tartı & Adım Girişi */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Günlük Tartı & Adım */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
-        {/* Tartı Takip Tablosu */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-          <h3 className="font-heading font-bold text-white text-base flex items-center gap-2">
-            <Scale className="w-5 h-5 text-emerald-400" />
-            Haftalık Günlük Aç Karnına Tartı Kaydı
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+          <h3 className="font-bold text-xs uppercase text-slate-500 flex items-center gap-1.5">
+            <Scale className="w-4 h-4 text-emerald-500" />
+            Haftalık Aç Karnına Tartı Kaydı
           </h3>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {daysOfWeek.map(day => (
-              <div key={day} className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-2.5 text-center">
-                <span className="text-[11px] text-slate-400 block font-semibold mb-1">{day}</span>
+              <div key={day} className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-center">
+                <span className="text-[10px] text-slate-500 font-semibold block mb-0.5">{day}</span>
                 <input
                   type="number"
                   step="0.1"
                   value={dailyWeights[day] || ''}
                   onChange={(e) => handleWeightChange(day, e.target.value)}
-                  className="w-full bg-slate-700/80 border border-slate-600 rounded-lg py-1 px-1.5 text-center text-sm font-bold text-emerald-300 focus:outline-none focus:border-emerald-400"
+                  className="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded py-0.5 text-center text-xs font-bold text-slate-900 dark:text-white"
                 />
               </div>
             ))}
           </div>
         </div>
 
-        {/* Adım Takip Tablosu */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-          <h3 className="font-heading font-bold text-white text-base flex items-center gap-2">
-            <Footprints className="w-5 h-5 text-cyan-400" />
-            Günlük Adım Sayısı (NEAT) Takibi
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+          <h3 className="font-bold text-xs uppercase text-slate-500 flex items-center gap-1.5">
+            <Footprints className="w-4 h-4 text-cyan-500" />
+            Günlük Adım Sayısı (NEAT)
           </h3>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {daysOfWeek.map(day => (
-              <div key={day} className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-2.5 text-center">
-                <span className="text-[11px] text-slate-400 block font-semibold mb-1">{day}</span>
+              <div key={day} className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-center">
+                <span className="text-[10px] text-slate-500 font-semibold block mb-0.5">{day}</span>
                 <input
                   type="number"
                   step="100"
                   value={dailySteps[day] || ''}
                   onChange={(e) => handleStepChange(day, e.target.value)}
-                  className="w-full bg-slate-700/80 border border-slate-600 rounded-lg py-1 px-1.5 text-center text-sm font-bold text-cyan-300 focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded py-0.5 text-center text-xs font-bold text-slate-900 dark:text-white"
                 />
               </div>
             ))}
@@ -157,42 +142,42 @@ export default function MeasurementTracker({ measurements, onUpdateMeasurements 
 
       </div>
 
-      {/* Bölgesel Çevre Ölçümleri (Haftalık Check-In) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
-        <h3 className="font-heading font-bold text-white text-base flex items-center gap-2">
-          <Ruler className="w-5 h-5 text-amber-400" />
-          Haftalık Bölgesel Vücut Ölçümleri (Mezura)
+      {/* Bölgesel Ölçümler */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+        <h3 className="font-bold text-xs uppercase text-slate-500 flex items-center gap-1.5">
+          <Ruler className="w-4 h-4 text-amber-500" />
+          Haftalık Bölgesel Vücut Çevre Ölçümleri (cm)
         </h3>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-800/80 text-slate-400 font-bold uppercase text-[10px]">
+            <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-bold uppercase text-[10px]">
               <tr>
-                <th className="p-2.5 rounded-l-lg">Hafta</th>
-                <th className="p-2.5">Tarih</th>
-                <th className="p-2.5">Kilo (kg)</th>
-                <th className="p-2.5">Boyun</th>
-                <th className="p-2.5">Göğüs</th>
-                <th className="p-2.5">Kol</th>
-                <th className="p-2.5">Bel</th>
-                <th className="p-2.5">Kalça</th>
-                <th className="p-2.5">Bacak</th>
-                <th className="p-2.5 rounded-r-lg">Kalf</th>
+                <th className="p-2 rounded-l-lg">Hafta</th>
+                <th className="p-2">Tarih</th>
+                <th className="p-2">Kilo</th>
+                <th className="p-2">Boyun</th>
+                <th className="p-2">Göğüs</th>
+                <th className="p-2">Kol</th>
+                <th className="p-2">Bel</th>
+                <th className="p-2">Kalça</th>
+                <th className="p-2">Bacak</th>
+                <th className="p-2 rounded-r-lg">Kalf</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {history.map((row) => (
-                <tr key={row.week} className="hover:bg-slate-800/40">
-                  <td className="p-2.5 font-bold text-emerald-400">Hafta {row.week}</td>
-                  <td className="p-2.5 text-slate-400">{row.date}</td>
-                  <td className="p-2.5 font-bold text-white">{row.weight} kg</td>
-                  <td className="p-2.5 text-slate-300">{row.neck} cm</td>
-                  <td className="p-2.5 text-slate-300">{row.chest} cm</td>
-                  <td className="p-2.5 text-slate-300">{row.arm} cm</td>
-                  <td className="p-2.5 font-bold text-amber-300">{row.waist} cm</td>
-                  <td className="p-2.5 text-slate-300">{row.hip} cm</td>
-                  <td className="p-2.5 text-slate-300">{row.thigh} cm</td>
-                  <td className="p-2.5 text-slate-300">{row.calf} cm</td>
+                <tr key={row.week} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td className="p-2 font-bold text-emerald-600 dark:text-emerald-400">H.{row.week}</td>
+                  <td className="p-2 text-slate-500">{row.date}</td>
+                  <td className="p-2 font-bold">{row.weight} kg</td>
+                  <td className="p-2">{row.neck} cm</td>
+                  <td className="p-2">{row.chest} cm</td>
+                  <td className="p-2">{row.arm} cm</td>
+                  <td className="p-2 font-bold text-amber-600 dark:text-amber-400">{row.waist} cm</td>
+                  <td className="p-2">{row.hip} cm</td>
+                  <td className="p-2">{row.thigh} cm</td>
+                  <td className="p-2">{row.calf} cm</td>
                 </tr>
               ))}
             </tbody>
