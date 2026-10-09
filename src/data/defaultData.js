@@ -87,7 +87,14 @@ export const DEFAULT_CLIENT = {
           },
           {
             id: "ex-1-3",
-            name: "Chest Fly of Choice (Cable / Pec Deck)",
+            name: "Chest Fly of Choice",
+            isChoice: true,
+            selectedOption: "Cable Incline Fly",
+            options: [
+              "Cable Incline Fly",
+              "Pec Deck Machine Fly",
+              "Incline Dumbbell Fly"
+            ],
             sets: 2,
             targetReps: "6-10",
             targetWeight: "50 kg",
@@ -105,6 +112,13 @@ export const DEFAULT_CLIENT = {
           {
             id: "ex-1-4",
             name: "Vertical Chest Press of Choice",
+            isChoice: true,
+            selectedOption: "Vertical Chest Press Machine",
+            options: [
+              "Vertical Chest Press Machine",
+              "Incline Dumbbell Press",
+              "Smith Machine Incline Press"
+            ],
             sets: 2,
             targetReps: "8",
             targetWeight: "70% of e1RM",
@@ -156,6 +170,13 @@ export const DEFAULT_CLIENT = {
           {
             id: "ex-1-7",
             name: "Z bar/DB Preacher Curl",
+            isChoice: true,
+            selectedOption: "Z Bar Preacher Curl",
+            options: [
+              "Z Bar Preacher Curl",
+              "Single Arm DB Preacher Curl",
+              "Cable Preacher Curl"
+            ],
             sets: 2,
             targetReps: "8-12",
             targetWeight: "30 kg",
@@ -300,7 +321,14 @@ export const DEFAULT_CLIENT = {
           },
           {
             id: "ex-2-6",
-            name: "DL of Choice (RDL / Conventional)",
+            name: "DL of Choice",
+            isChoice: true,
+            selectedOption: "Romanian Deadlift (RDL)",
+            options: [
+              "Romanian Deadlift (RDL)",
+              "Conventional Barbell Deadlift",
+              "Trap Bar Deadlift"
+            ],
             sets: 2,
             targetReps: "6, 8",
             targetWeight: "110 kg",
@@ -547,7 +575,14 @@ export const DEFAULT_CLIENT = {
           },
           {
             id: "ex-5-4",
-            name: "Horizontal Row of Choice (Chest Supported)",
+            name: "Horizontal Row of Choice",
+            isChoice: true,
+            selectedOption: "Chest Supported T-Bar Row",
+            options: [
+              "Chest Supported T-Bar Row",
+              "Seated Cable Row (Neutral)",
+              "Dumbbell Seal Row"
+            ],
             sets: 2,
             targetReps: "6",
             targetWeight: "70 kg",

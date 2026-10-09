@@ -6,10 +6,12 @@ import WarmupSection from './components/WorkoutBuilder/WarmupSection';
 import MeasurementTracker from './components/Measurements/MeasurementTracker';
 import ClientPortal from './components/ClientView/ClientPortal';
 import PrintExportView from './components/PrintView/PrintExportView';
+import AuthModal from './components/Auth/AuthModal';
 import { DEFAULT_CLIENT } from './data/defaultData';
 
 const LOCAL_STORAGE_KEY = 'coachfit_clients_v3';
 const THEME_STORAGE_KEY = 'coachfit_theme';
+const COACH_AUTH_KEY = 'coachfit_current_coach';
 
 export default function App() {
   // Tema Durumu (Açık / Koyu)
@@ -26,6 +28,17 @@ export default function App() {
     }
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
+
+  // Koç Oturumu
+  const [currentCoach, setCurrentCoach] = useState(() => {
+    try {
+      const saved = localStorage.getItem(COACH_AUTH_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Danışanlar
   const [clients, setClients] = useState(() => {
@@ -46,7 +59,9 @@ export default function App() {
   });
 
   const [activeTab, setActiveTab] = useState('workout'); // 'workout' | 'nutrition' | 'warmup' | 'measurements'
-  const [viewMode, setViewMode] = useState('coach'); // 'coach' | 'client'
+  const [viewMode, setViewMode] = useState(() => {
+    return localStorage.getItem(COACH_AUTH_KEY) ? 'coach' : 'client';
+  });
 
   useEffect(() => {
     try {
@@ -57,6 +72,17 @@ export default function App() {
   }, [clients]);
 
   const activeClient = clients.find(c => c.id === activeClientId) || clients[0] || DEFAULT_CLIENT;
+
+  const handleLoginSuccess = (coach) => {
+    setCurrentCoach(coach);
+    setViewMode('coach');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem(COACH_AUTH_KEY);
+    setCurrentCoach(null);
+    setViewMode('client');
+  };
 
   const handleUpdateActiveClient = (updated) => {
     setClients(prev => prev.map(c => c.id === updated.id ? updated : c));
@@ -141,6 +167,10 @@ export default function App() {
         clients={clients}
         activeClientId={activeClientId}
         setActiveClientId={setActiveClientId}
+        isCoachLoggedIn={!!currentCoach}
+        currentCoach={currentCoach}
+        onOpenLogin={() => setIsAuthModalOpen(true)}
+        onLogout={handleLogout}
         onAddNewClient={handleAddNewClient}
         onExportJson={handleExportJson}
         onImportJson={handleImportJson}
@@ -203,6 +233,13 @@ export default function App() {
 
       {/* Yazdırma / PDF Çıktı Görünümü */}
       <PrintExportView client={activeClient} />
+
+      {/* Koç Giriş & Kayıt Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
 
       {/* Sade Alt Bilgi */}
       <footer className="border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950 py-3.5 text-center text-xs text-slate-500 no-print transition-colors">

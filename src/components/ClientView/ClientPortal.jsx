@@ -99,6 +99,27 @@ export default function ClientPortal({ client, onUpdateClient }) {
     });
   };
 
+  const handleUpdateChoiceOption = (exerciseId, option) => {
+    const updatedDays = workout.days.map(day => {
+      if (day.id !== selectedDayId) return day;
+      return {
+        ...day,
+        exercises: day.exercises.map(ex => {
+          if (ex.id !== exerciseId) return ex;
+          return {
+            ...ex,
+            selectedOption: option
+          };
+        })
+      };
+    });
+
+    onUpdateClient({
+      ...client,
+      workoutProgram: { ...workout, days: updatedDays }
+    });
+  };
+
   const completedCount = (currentDay?.exercises || []).filter(ex => ex.weeks?.[activeWeek]?.completed).length;
   const totalCount = currentDay?.exercises?.length || 0;
   const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -200,6 +221,9 @@ export default function ClientPortal({ client, onUpdateClient }) {
             const weekData = ex.weeks?.[activeWeek] || {};
             const isDone = weekData.completed;
 
+            const hasOptions = ex.isChoice || (ex.options && ex.options.length > 0);
+            const activeSelectedName = ex.selectedOption || (hasOptions ? ex.options[0] : ex.name);
+
             return (
               <div
                 key={ex.id}
@@ -222,10 +246,43 @@ export default function ClientPortal({ client, onUpdateClient }) {
                       )}
                     </button>
                     <div>
-                      <h4 className={`text-sm font-bold ${isDone ? 'line-through text-slate-400' : ''}`}>
-                        {ex.name}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      <div className="flex items-center gap-2">
+                        <h4 className={`text-sm font-bold ${isDone ? 'line-through text-slate-400' : ''}`}>
+                          {hasOptions ? activeSelectedName : ex.name}
+                        </h4>
+                        {hasOptions && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
+                            Seçenekli
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Seçenekli Hareket Butonları */}
+                      {hasOptions && (
+                        <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
+                          <span className="text-[10px] uppercase font-bold text-slate-400">
+                            Tercihin:
+                          </span>
+                          {(ex.options || []).map((opt, oIdx) => {
+                            const isSelected = activeSelectedName === opt;
+                            return (
+                              <button
+                                key={oIdx}
+                                onClick={() => handleUpdateChoiceOption(ex.id, opt)}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                                  isSelected
+                                    ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                }`}
+                              >
+                                {isSelected ? '✓ ' : ''}{opt}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                         <span className="font-semibold text-slate-800 dark:text-slate-200">
                           {ex.sets} Set x {ex.targetReps} Tekrar
                         </span>
