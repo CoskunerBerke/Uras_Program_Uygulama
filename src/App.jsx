@@ -7,6 +7,7 @@ import MeasurementTracker from './components/Measurements/MeasurementTracker';
 import ClientPortal from './components/ClientView/ClientPortal';
 import PrintExportView from './components/PrintView/PrintExportView';
 import AuthPortal from './components/Auth/AuthPortal';
+import AssignProgramModal from './components/CoachView/AssignProgramModal';
 import { DEFAULT_CLIENT } from './data/defaultData';
 import { Menu, Sun, Moon } from 'lucide-react';
 
@@ -41,6 +42,7 @@ export default function App() {
   });
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   // Danışanlar Veritabanı
   const [clients, setClients] = useState(() => {
@@ -72,6 +74,72 @@ export default function App() {
       }
     } catch (e) {
       console.error("Account init error:", e);
+    }
+  }, []);
+
+  // WhatsApp veya Paylaşım Linki ile gelen Programı Otomatik Algıla (?assign=...&p=...)
+  useEffect(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const payloadBase64 = urlParams.get('p');
+      const assignCode = urlParams.get('assign');
+
+      if (payloadBase64) {
+        const decodedJson = decodeURIComponent(escape(atob(payloadBase64)));
+        const parsed = JSON.parse(decodedJson);
+
+        if (parsed && parsed.workoutProgram) {
+          const targetClientId = parsed.clientId || assignCode || `client-${Date.now()}`;
+          const targetName = parsed.name || 'Danışan';
+
+          setClients(prev => {
+            const existingIdx = prev.findIndex(c => 
+              c.id === targetClientId || (c.clientCode && c.clientCode.toUpperCase() === targetClientId.toUpperCase())
+            );
+            let updated;
+            if (existingIdx >= 0) {
+              updated = [...prev];
+              updated[existingIdx] = {
+                ...updated[existingIdx],
+                workoutProgram: parsed.workoutProgram,
+                nutritionPlan: parsed.nutritionPlan || updated[existingIdx].nutritionPlan
+              };
+            } else {
+              const newClient = {
+                ...DEFAULT_CLIENT,
+                id: targetClientId,
+                clientCode: targetClientId,
+                name: targetName,
+                workoutProgram: parsed.workoutProgram,
+                nutritionPlan: parsed.nutritionPlan || DEFAULT_CLIENT.nutritionPlan
+              };
+              updated = [...prev, newClient];
+            }
+            try {
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+            } catch (err) {
+              console.error(err);
+            }
+            return updated;
+          });
+
+          // Oturumu başlat
+          const sessionUser = {
+            role: 'client',
+            clientId: targetClientId,
+            name: targetName,
+            username: targetClientId.toLowerCase()
+          };
+          sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify(sessionUser));
+          setCurrentUser(sessionUser);
+          setCoachActiveClientId(targetClientId);
+
+          alert(`🎉 Tebrikler ${targetName}! Uras Hoca tarafından sana özel hazırlanan yeni program başarıyla yüklendi!`);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    } catch (err) {
+      console.error("URL import error:", err);
     }
   }, []);
 
@@ -112,7 +180,9 @@ export default function App() {
   }, [clients]);
 
   // Aktif Danışan Profili
-  const activeClient = clients.find(c => c.id === activeClientId) || clients[0] || DEFAULT_CLIENT;
+  const activeClient = clients.find(c => 
+    c.id === activeClientId || (c.clientCode && c.clientCode.toUpperCase() === activeClientId?.toUpperCase())
+  ) || clients[0] || DEFAULT_CLIENT;
 
   // Başarılı Giriş Yapıldığında
   const handleLoginSuccess = (user) => {
@@ -135,9 +205,14 @@ export default function App() {
 
   // Danışan Kayıt Olduğunda Yeni Profil Oluşturma
   const handleRegisterClient = (newClientId, name, goal) => {
+    // Şık bir Danışan Kodu oluştur: Örn: CF-102
+    const codeNum = 100 + clients.length + 1;
+    const clientCode = `CF-${codeNum}`;
+
     const newClient = {
       ...DEFAULT_CLIENT,
       id: newClientId,
+      clientCode: clientCode,
       name,
       goal: goal || 'Hipertrofi / Kütle',
       startDate: new Date().toISOString().split('T')[0],
@@ -175,6 +250,47 @@ export default function App() {
     const newId = `client-${Date.now()}`;
     handleRegisterClient(newId, name, goal);
     setCoachActiveClientId(newId);
+  };
+
+  // Koç Tarafından Client ID ile Program Atama
+  const handleAssignToClient = ({ clientId, name, workoutProgram, nutritionPlan }) => {
+    let targetId = clientId;
+    setClients(prev => {
+      const idx = prev.findIndex(c => 
+        c.id === clientId || (c.clientCode && c.clientCode.toUpperCase() === clientId.toUpperCase())
+      );
+      let updated;
+      if (idx >= 0) {
+        updated = [...prev];
+        targetId = updated[idx].id;
+        updated[idx] = {
+          ...updated[idx],
+          name: name || updated[idx].name,
+          clientCode: clientId,
+          workoutProgram,
+          nutritionPlan
+        };
+      } else {
+        const newClient = {
+          ...DEFAULT_CLIENT,
+          id: clientId,
+          clientCode: clientId,
+          name: name || `Danışan (${clientId})`,
+          workoutProgram,
+          nutritionPlan
+        };
+        updated = [...prev, newClient];
+      }
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      } catch (err) {
+        console.error(err);
+      }
+      return updated;
+    });
+
+    setCoachActiveClientId(targetId);
+    return { targetId };
   };
 
   const handleExportJson = () => {
@@ -264,6 +380,7 @@ export default function App() {
         setActiveClientId={setActiveClientId}
         onLogout={handleLogout}
         onAddNewClient={handleAddNewClient}
+        onOpenAssignModal={() => setIsAssignModalOpen(true)}
         onExportJson={handleExportJson}
         onImportJson={handleImportJson}
         onResetData={handleResetData}
@@ -359,6 +476,17 @@ export default function App() {
         <PrintExportView client={activeClient} />
 
       </div>
+
+      {/* Koç İçin Danışan Koduyla Program Atama Modalı */}
+      {currentUser.role === 'coach' && (
+        <AssignProgramModal
+          isOpen={isAssignModalOpen}
+          onClose={() => setIsAssignModalOpen(false)}
+          clients={clients}
+          activeClient={activeClient}
+          onAssignToClient={handleAssignToClient}
+        />
+      )}
 
     </div>
   );

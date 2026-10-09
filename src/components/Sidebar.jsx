@@ -20,7 +20,8 @@ import {
   X,
   ChevronRight,
   ShieldCheck,
-  User
+  User,
+  Target
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -36,6 +37,7 @@ export default function Sidebar({
   setActiveClientId,
   onLogout,
   onAddNewClient,
+  onOpenAssignModal,
   onExportJson,
   onImportJson,
   onResetData,
@@ -176,6 +178,15 @@ export default function Sidebar({
                 <span>Sporcu Önizleme</span>
               </button>
             </div>
+
+            {/* Danışan Koduyla (Client ID) Program Ata Butonu */}
+            <button
+              onClick={onOpenAssignModal}
+              className="mt-2 w-full py-2 px-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-[0.98]"
+            >
+              <Target className="w-4 h-4 text-slate-950" />
+              <span>Client ID ile Program Ata</span>
+            </button>
           </div>
         ) : (
           /* DANIŞAN GÖRÜNÜMÜ: Sadece Kendi Profil Bilgisi (Diğer danışanlar asla görünmez!) */

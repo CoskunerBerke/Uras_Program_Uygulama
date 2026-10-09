@@ -1,5 +1,6 @@
 export const DEFAULT_CLIENT = {
   id: "client-berke-1",
+  clientCode: "CF-101",
   name: "Berke",
   phone: "+90 555 123 4567",
   goal: "Hipertrofi / Temiz Kütle (Lean Bulk)",

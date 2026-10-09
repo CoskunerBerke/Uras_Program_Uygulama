@@ -9,8 +9,13 @@ import {
   RotateCcw, 
   Droplets, 
   Utensils, 
-  Video
+  Video,
+  Copy,
+  Check,
+  DownloadCloud,
+  Target
 } from 'lucide-react';
+import ImportProgramModal from './ImportProgramModal';
 
 export default function ClientPortal({ client, onUpdateClient }) {
   const workout = client.workoutProgram;
@@ -24,6 +29,24 @@ export default function ClientPortal({ client, onUpdateClient }) {
   const [initialTimer, setInitialTimer] = useState(90);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [drunkWaterMl, setDrunkWaterMl] = useState(1500);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  const clientCode = client.clientCode || client.id;
+
+  const handleCopyClientCode = () => {
+    navigator.clipboard.writeText(clientCode);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const handleImportProgramSuccess = (importedData) => {
+    onUpdateClient({
+      ...client,
+      workoutProgram: importedData.workoutProgram || client.workoutProgram,
+      nutritionPlan: importedData.nutritionPlan || client.nutritionPlan
+    });
+  };
 
   useEffect(() => {
     let interval = null;
@@ -127,6 +150,44 @@ export default function ClientPortal({ client, onUpdateClient }) {
   return (
     <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5 text-slate-900 dark:text-white transition-colors">
       
+      {/* 0. Danışan Kodu (Client ID) & Program Yükleme Rozeti */}
+      <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            ID
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Danışan Kodunuz:</span>
+              <span className="font-heading font-black text-sm text-emerald-700 dark:text-emerald-400 tracking-wider">
+                {clientCode}
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400">
+              Bu kodu Uras Hoca'ya ileterek size özel programınızı atamasını sağlayabilirsiniz.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button
+            onClick={handleCopyClientCode}
+            className="flex-1 sm:flex-none px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+          >
+            {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copiedCode ? 'Kopyalandı' : 'Kodu Kopyala'}</span>
+          </button>
+
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex-1 sm:flex-none px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs"
+          >
+            <DownloadCloud className="w-3.5 h-3.5" />
+            <span>Program Yükle</span>
+          </button>
+        </div>
+      </div>
+
       {/* 1. Sade Başlık & İlerleme Kartı */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
@@ -380,6 +441,14 @@ export default function ClientPortal({ client, onUpdateClient }) {
           </button>
         </div>
       </div>
+
+      {/* Kod İle Program Yükleme Modalı */}
+      <ImportProgramModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        client={client}
+        onImportSuccess={handleImportProgramSuccess}
+      />
 
     </div>
   );
