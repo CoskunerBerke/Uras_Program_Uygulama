@@ -6,13 +6,13 @@ import WarmupSection from './components/WorkoutBuilder/WarmupSection';
 import MeasurementTracker from './components/Measurements/MeasurementTracker';
 import ClientPortal from './components/ClientView/ClientPortal';
 import PrintExportView from './components/PrintView/PrintExportView';
-import AuthModal from './components/Auth/AuthModal';
+import AuthPortal from './components/Auth/AuthPortal';
 import { DEFAULT_CLIENT } from './data/defaultData';
-import { Menu, Sun, Moon, Eye, Edit3, Lock, LogOut } from 'lucide-react';
+import { Menu, Sun, Moon } from 'lucide-react';
 
 const LOCAL_STORAGE_KEY = 'coachfit_clients_v3';
 const THEME_STORAGE_KEY = 'coachfit_theme';
-const COACH_AUTH_KEY = 'coachfit_current_coach';
+const SESSION_AUTH_KEY = 'coachfit_session_user';
 
 export default function App() {
   // Tema (Açık / Koyu)
@@ -30,19 +30,19 @@ export default function App() {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
-  // Koç Oturumu
-  const [currentCoach, setCurrentCoach] = useState(() => {
+  // Oturum Yönetimi (SessionStorage: Tarayıcı/Sekme kapandığında silinir, her girişte tekrar şifre ister!)
+  const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const saved = localStorage.getItem(COACH_AUTH_KEY);
+      const saved = sessionStorage.getItem(SESSION_AUTH_KEY);
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
   });
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Danışanlar
+  // Danışanlar Veritabanı
   const [clients, setClients] = useState(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -56,14 +56,52 @@ export default function App() {
     return [DEFAULT_CLIENT];
   });
 
-  const [activeClientId, setActiveClientId] = useState(() => {
+  // Varsayılan Berke hesabını başlat
+  useEffect(() => {
+    try {
+      const accounts = JSON.parse(localStorage.getItem('coachfit_client_accounts') || '[]');
+      if (!accounts.some(a => a.username.toLowerCase() === 'berke')) {
+        accounts.push({
+          id: 'acc-berke',
+          username: 'berke',
+          password: '123',
+          clientId: DEFAULT_CLIENT.id,
+          name: 'Berke Coşkuner'
+        });
+        localStorage.setItem('coachfit_client_accounts', JSON.stringify(accounts));
+      }
+    } catch (e) {
+      console.error("Account init error:", e);
+    }
+  }, []);
+
+  // Aktif Danışan ID'si
+  const [coachActiveClientId, setCoachActiveClientId] = useState(() => {
     return clients[0]?.id || DEFAULT_CLIENT.id;
   });
 
+  // Güvenlik Kuralı: Eğer kullanıcı danışan ise SADECE kendi ID'sini görebilir!
+  const activeClientId = currentUser?.role === 'client' 
+    ? currentUser.clientId 
+    : coachActiveClientId;
+
+  const setActiveClientId = (id) => {
+    if (currentUser?.role === 'coach') {
+      setCoachActiveClientId(id);
+    }
+  };
+
   const [activeTab, setActiveTab] = useState('workout'); // 'workout' | 'nutrition' | 'warmup' | 'measurements'
-  const [viewMode, setViewMode] = useState(() => {
-    return localStorage.getItem(COACH_AUTH_KEY) ? 'coach' : 'client';
-  });
+  
+  // Görünüm Modu: Danışan ise daima 'client'. Koç ise 'coach' veya sporcu önizlemesi için 'client' seçebilir.
+  const [coachViewMode, setCoachViewMode] = useState('coach');
+  const viewMode = currentUser?.role === 'client' ? 'client' : coachViewMode;
+  
+  const setViewMode = (mode) => {
+    if (currentUser?.role === 'coach') {
+      setCoachViewMode(mode);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -73,34 +111,39 @@ export default function App() {
     }
   }, [clients]);
 
+  // Aktif Danışan Profili
   const activeClient = clients.find(c => c.id === activeClientId) || clients[0] || DEFAULT_CLIENT;
 
-  const handleLoginSuccess = (coach) => {
-    setCurrentCoach(coach);
-    setViewMode('coach');
+  // Başarılı Giriş Yapıldığında
+  const handleLoginSuccess = (user) => {
+    sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify(user));
+    setCurrentUser(user);
+    if (user.role === 'client') {
+      setCoachViewMode('client');
+    } else {
+      setCoachViewMode('coach');
+    }
   };
 
+  // Güvenli Çıkış Yapıldığında
   const handleLogout = () => {
-    localStorage.removeItem(COACH_AUTH_KEY);
-    setCurrentCoach(null);
-    setViewMode('client');
+    sessionStorage.removeItem(SESSION_AUTH_KEY);
+    setCurrentUser(null);
+    setCoachViewMode('coach');
+    setActiveTab('workout');
   };
 
-  const handleUpdateActiveClient = (updated) => {
-    setClients(prev => prev.map(c => c.id === updated.id ? updated : c));
-  };
-
-  const handleAddNewClient = (name, goal) => {
-    const newId = `client-${Date.now()}`;
+  // Danışan Kayıt Olduğunda Yeni Profil Oluşturma
+  const handleRegisterClient = (newClientId, name, goal) => {
     const newClient = {
       ...DEFAULT_CLIENT,
-      id: newId,
+      id: newClientId,
       name,
-      goal,
+      goal: goal || 'Hipertrofi / Kütle',
       startDate: new Date().toISOString().split('T')[0],
       workoutProgram: {
         ...DEFAULT_CLIENT.workoutProgram,
-        splitName: `${name} - Programı`,
+        splitName: `${name} - Özel Program`,
         activeWeek: 1
       },
       nutritionPlan: {
@@ -109,8 +152,29 @@ export default function App() {
       }
     };
 
-    setClients(prev => [...prev, newClient]);
-    setActiveClientId(newId);
+    setClients(prev => {
+      const updated = [...prev, newClient];
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      } catch (err) {
+        console.error(err);
+      }
+      return updated;
+    });
+
+    return newClient;
+  };
+
+  // Danışan Güncelleme (Koç veya Danışanın kendisi)
+  const handleUpdateActiveClient = (updated) => {
+    setClients(prev => prev.map(c => c.id === updated.id ? updated : c));
+  };
+
+  // Koç Tarafından Yeni Danışan Ekleme
+  const handleAddNewClient = (name, goal) => {
+    const newId = `client-${Date.now()}`;
+    handleRegisterClient(newId, name, goal);
+    setCoachActiveClientId(newId);
   };
 
   const handleExportJson = () => {
@@ -132,7 +196,7 @@ export default function App() {
         const parsed = JSON.parse(event.target.result);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setClients(parsed);
-          setActiveClientId(parsed[0].id);
+          setCoachActiveClientId(parsed[0].id);
           alert("Program başarıyla yüklendi!");
         } else {
           alert("Geçersiz dosya!");
@@ -146,7 +210,7 @@ export default function App() {
   const handleResetData = () => {
     if (window.confirm("Tüm değişiklikleri sıfırlayıp e-tablodaki orijinal Berke antrenman & beslenme verilerine dönmek istiyor musunuz?")) {
       setClients([DEFAULT_CLIENT]);
-      setActiveClientId(DEFAULT_CLIENT.id);
+      setCoachActiveClientId(DEFAULT_CLIENT.id);
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     }
   };
@@ -165,11 +229,30 @@ export default function App() {
     }
   };
 
+  // =========================================================================
+  // GÜVENLİK KATMANI: Giriş Yapılmamışsa SADECE AuthPortal Render Edilir!
+  // =========================================================================
+  if (!currentUser) {
+    return (
+      <AuthPortal
+        onLoginSuccess={handleLoginSuccess}
+        clients={clients}
+        onRegisterClient={handleRegisterClient}
+        theme={theme}
+        setTheme={setTheme}
+      />
+    );
+  }
+
+  // =========================================================================
+  // GİRİŞ YAPILMIŞ: Rolüne Uygun İzole Arayüz
+  // =========================================================================
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex font-sans transition-colors duration-200">
       
       {/* 1. Sol Seçenek Menüsü (Sidebar) */}
       <Sidebar
+        currentUser={currentUser}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         viewMode={viewMode}
@@ -179,9 +262,6 @@ export default function App() {
         clients={clients}
         activeClientId={activeClientId}
         setActiveClientId={setActiveClientId}
-        isCoachLoggedIn={!!currentCoach}
-        currentCoach={currentCoach}
-        onOpenLogin={() => setIsAuthModalOpen(true)}
         onLogout={handleLogout}
         onAddNewClient={handleAddNewClient}
         onExportJson={handleExportJson}
@@ -210,8 +290,8 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-              {viewMode === 'coach' ? 'Koç' : 'Danışan'}
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              {currentUser.role === 'coach' ? (viewMode === 'coach' ? 'Koç (Yönetici)' : 'Sporcu Önizleme') : 'Danışan'}
             </span>
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -279,13 +359,6 @@ export default function App() {
         <PrintExportView client={activeClient} />
 
       </div>
-
-      {/* Koç Giriş & Kayıt Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onLoginSuccess={handleLoginSuccess}
-      />
 
     </div>
   );

@@ -18,10 +18,13 @@ import {
   UserCheck, 
   Menu, 
   X,
-  ChevronRight
+  ChevronRight,
+  ShieldCheck,
+  User
 } from 'lucide-react';
 
 export default function Sidebar({
+  currentUser,
   activeTab,
   setActiveTab,
   viewMode,
@@ -31,9 +34,6 @@ export default function Sidebar({
   clients,
   activeClientId,
   setActiveClientId,
-  isCoachLoggedIn,
-  currentCoach,
-  onOpenLogin,
   onLogout,
   onAddNewClient,
   onExportJson,
@@ -47,6 +47,7 @@ export default function Sidebar({
   const [newClientName, setNewClientName] = useState('');
   const [newClientGoal, setNewClientGoal] = useState('Hipertrofi / Kütle');
 
+  const isCoach = currentUser?.role === 'coach';
   const activeClient = clients.find(c => c.id === activeClientId) || clients[0];
 
   const handleCreateClient = (e) => {
@@ -91,7 +92,7 @@ export default function Sidebar({
                   CoachFit
                 </span>
                 <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400">
-                  Pro
+                  {isCoach ? 'Yönetici' : 'Üye'}
                 </span>
               </div>
               <p className="text-[10px] text-slate-400">Fitness & Diyet Yönetimi</p>
@@ -106,111 +107,100 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* 2. Danışan Seçici */}
-        <div className="p-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30">
-          <div className="text-[10px] uppercase font-bold text-slate-400 px-1 mb-1">
-            Aktif Danışan:
-          </div>
-          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1 shadow-2xs">
-            <select
-              value={activeClientId}
-              onChange={(e) => {
-                if (e.target.value === '__add__') {
-                  setIsClientModalOpen(true);
-                } else {
-                  setActiveClientId(e.target.value);
-                }
-              }}
-              className="flex-1 bg-transparent text-xs font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer pl-1.5 py-1"
-            >
-              {clients.map(c => (
-                <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
-                  👤 {c.name} {c.goal ? `(${c.goal})` : ''}
-                </option>
-              ))}
-              <option value="__add__" className="bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 font-bold">
-                + Yeni Danışan Ekle...
-              </option>
-            </select>
+        {/* 2. KULLANICI PROFİLİ VEYA KOÇ DANIŞAN SEÇİCİSİ */}
+        {isCoach ? (
+          /* KOÇ GÖRÜNÜMÜ: Danışan Seçici ve Ekleme */
+          <div className="p-3 border-b border-slate-100 dark:border-slate-800 bg-amber-50/40 dark:bg-amber-950/20">
+            <div className="flex items-center justify-between mb-1.5 px-1">
+              <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3" /> Koç: {currentUser?.name || 'Uras Hoca'}
+              </span>
+              <span className="text-[10px] font-semibold text-slate-400">
+                {clients.length} Danışan
+              </span>
+            </div>
 
-            <button
-              onClick={() => setIsClientModalOpen(true)}
-              title="Yeni Danışan Ekle"
-              className="p-1 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* 3. Mod Switcher (Danışan / Koç Modu) */}
-        <div className="p-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="text-[10px] uppercase font-bold text-slate-400 px-1 mb-1.5">
-            Görünüm Modu:
-          </div>
-          <div className="bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center">
-            <button
-              onClick={() => setViewMode('client')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                viewMode === 'client'
-                  ? 'bg-white text-slate-900 dark:bg-emerald-500 dark:text-slate-950 shadow-xs'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Danışan</span>
-            </button>
-
-            <button
-              onClick={() => {
-                if (isCoachLoggedIn) {
-                  setViewMode('coach');
-                } else {
-                  onOpenLogin();
-                }
-              }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                viewMode === 'coach'
-                  ? 'bg-white text-slate-900 dark:bg-emerald-500 dark:text-slate-950 shadow-xs'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-              }`}
-            >
-              {isCoachLoggedIn ? <Edit3 className="w-3.5 h-3.5 text-emerald-600 dark:text-slate-950" /> : <Lock className="w-3.5 h-3.5 text-amber-500" />}
-              <span>Koç Modu</span>
-            </button>
-          </div>
-
-          {/* Koç Oturumu Rozeti */}
-          {isCoachLoggedIn ? (
-            <div className="mt-2 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-between text-[11px]">
-              <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-semibold truncate">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-                <span className="truncate">{currentCoach?.name || 'Koç'}</span>
-              </div>
-              <button
-                onClick={onLogout}
-                title="Koç Oturumunu Kapat ve Kilitle"
-                className="text-slate-400 hover:text-rose-500 flex items-center gap-0.5 text-[10px]"
+            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1 shadow-2xs">
+              <select
+                value={activeClientId}
+                onChange={(e) => {
+                  if (e.target.value === '__add__') {
+                    setIsClientModalOpen(true);
+                  } else {
+                    setActiveClientId(e.target.value);
+                  }
+                }}
+                className="flex-1 bg-transparent text-xs font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer pl-1.5 py-1"
               >
-                <LogOut className="w-3 h-3" />
-                Çıkış
+                {clients.map(c => (
+                  <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+                    👤 {c.name} {c.goal ? `(${c.goal})` : ''}
+                  </option>
+                ))}
+                <option value="__add__" className="bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 font-bold">
+                  + Yeni Danışan Ekle...
+                </option>
+              </select>
+
+              <button
+                onClick={() => setIsClientModalOpen(true)}
+                title="Yeni Danışan Ekle"
+                className="p-1 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
-          ) : (
-            <button
-              onClick={onOpenLogin}
-              className="mt-2 w-full py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center justify-center gap-1"
-            >
-              <Lock className="w-3 h-3" />
-              <span>Koç Girişi Yap</span>
-            </button>
-          )}
-        </div>
 
-        {/* 4. Sol Navigasyon Menüsü */}
+            {/* Koç Önizleme Switcher */}
+            <div className="mt-2 bg-slate-100 dark:bg-slate-800/90 p-0.5 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center">
+              <button
+                onClick={() => setViewMode('coach')}
+                className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                  viewMode === 'coach'
+                    ? 'bg-white text-amber-700 dark:bg-amber-500 dark:text-slate-950 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                <Edit3 className="w-3 h-3" />
+                <span>Düzenleme</span>
+              </button>
+              <button
+                onClick={() => setViewMode('client')}
+                className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                  viewMode === 'client'
+                    ? 'bg-white text-emerald-700 dark:bg-emerald-500 dark:text-slate-950 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                <Eye className="w-3 h-3" />
+                <span>Sporcu Önizleme</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* DANIŞAN GÖRÜNÜMÜ: Sadece Kendi Profil Bilgisi (Diğer danışanlar asla görünmez!) */
+          <div className="p-3 border-b border-slate-100 dark:border-slate-800 bg-emerald-50/30 dark:bg-emerald-950/20">
+            <div className="flex items-center gap-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 shadow-2xs">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-extrabold flex items-center justify-center text-xs">
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                  {currentUser?.name}
+                </div>
+                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>Danışan Hesabı</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 3. Sol Navigasyon Menüsü */}
         <nav className="p-3 space-y-1 flex-1 overflow-y-auto">
           <div className="text-[10px] uppercase font-bold text-slate-400 px-2 mb-1">
-            Menü:
+            Program Menüsü:
           </div>
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -243,10 +233,10 @@ export default function Sidebar({
           })}
         </nav>
 
-        {/* 5. Alt Araçlar (Tema, Yazdır, Yedek) */}
+        {/* 4. Alt Araçlar & Çıkış Yap */}
         <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2 bg-slate-50/50 dark:bg-slate-950/40">
           
-          <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center justify-between gap-1.5">
             {/* Tema Değiştirici */}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -274,96 +264,110 @@ export default function Sidebar({
               <Printer className="w-4 h-4" />
             </button>
 
-            {/* JSON İndir */}
-            <button
-              onClick={onExportJson}
-              title="Yedek JSON İndir"
-              className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-            >
-              <Download className="w-4 h-4" />
-            </button>
+            {/* Sadece Koçlar İçin Yedekleme ve Sıfırlama */}
+            {isCoach && (
+              <>
+                <button
+                  onClick={onExportJson}
+                  title="Yedek JSON İndir"
+                  className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
 
-            {/* JSON Yükle */}
-            <label
-              title="Yedek JSON Yükle"
-              className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 cursor-pointer"
-            >
-              <Upload className="w-4 h-4" />
-              <input type="file" accept=".json" className="hidden" onChange={onImportJson} />
-            </label>
+                <label
+                  title="Yedek JSON Yükle"
+                  className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 cursor-pointer"
+                >
+                  <Upload className="w-4 h-4" />
+                  <input type="file" accept=".json" className="hidden" onChange={onImportJson} />
+                </label>
 
-            {/* Sıfırla */}
-            <button
-              onClick={onResetData}
-              title="Örnek Veriye Sıfırla"
-              className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-400 hover:text-rose-500 border border-slate-200 dark:border-slate-700"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
+                <button
+                  onClick={onResetData}
+                  title="Örnek Veriye Sıfırla"
+                  className="p-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-400 hover:text-rose-500 border border-slate-200 dark:border-slate-700"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </>
+            )}
           </div>
 
-          <div className="text-[10px] text-center text-slate-400 pt-1">
-            CoachFit © 2026 • Bilimsel Fitness
-          </div>
+          {/* GÜVENLİ ÇIKIŞ BUTONU */}
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold border border-rose-200 dark:border-rose-500/20 transition-all active:scale-[0.98]"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Güvenli Çıkış Yap</span>
+          </button>
+
         </div>
 
       </aside>
 
-      {/* Yeni Danışan Modal */}
+      {/* Yeni Danışan Ekle Modal (Sadece Koç Modunda Kullanılabilir) */}
       {isClientModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl text-slate-900 dark:text-white">
-            <h3 className="text-base font-bold flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              Yeni Danışan Oluştur
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Danışanınız için sıfırdan veya şablon üzerinden program ve diyet hazırlayın.
-            </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-sm shadow-xl p-5 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                  <UserCheck className="w-4 h-4" />
+                </div>
+                <h3 className="font-heading font-bold text-sm">Yeni Danışan Oluştur</h3>
+              </div>
+              <button 
+                onClick={() => setIsClientModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-            <form onSubmit={handleCreateClient} className="mt-4 space-y-3.5">
+            <form onSubmit={handleCreateClient} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Danışan Adı & Soyadı
+                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                  Danışan Adı Soyadı
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Örn: Ahmet Yılmaz"
+                  placeholder="Örn: Mehmet Demir"
                   value={newClientName}
                   onChange={(e) => setNewClientName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Hedef & Seviye
+                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                  Hedef / Odak
                 </label>
                 <select
                   value={newClientGoal}
                   onChange={(e) => setNewClientGoal(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 cursor-pointer"
                 >
-                  <option value="Hipertrofi / Kütle (Bulk)">Hipertrofi / Kütle (Bulk)</option>
-                  <option value="Definasyon / Yağ Yakımı (Cut)">Definasyon / Yağ Yakımı (Cut)</option>
-                  <option value="Güç & Kuvvet (Powerbuilding)">Güç & Kuvvet (Powerbuilding)</option>
-                  <option value="Vücut Rekompozisyonu (Recomp)">Vücut Rekompozisyonu (Recomp)</option>
-                  <option value="Fonksiyonel Fitness & Kondisyon">Fonksiyonel Fitness & Kondisyon</option>
+                  <option value="Hipertrofi / Kütle">Hipertrofi / Kütle</option>
+                  <option value="Yağ Yakımı / Definasyon">Yağ Yakımı / Definasyon</option>
+                  <option value="Güç / Powerlifting">Güç / Powerlifting</option>
+                  <option value="Kondisyon / Atletik Performans">Kondisyon / Atletik Performans</option>
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsClientModalOpen(false)}
-                  className="px-3.5 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+                  className="flex-1 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
-                  İptal
+                  Vazgeç
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-bold text-white dark:text-slate-950 bg-emerald-600 dark:bg-emerald-400 hover:bg-emerald-500 rounded-xl transition-colors shadow-xs"
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-xs"
                 >
                   Danışanı Oluştur
                 </button>
